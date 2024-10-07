@@ -9,7 +9,7 @@ const app = express();
 // Configurer CORS pour autoriser les requêtes du frontend
 app.use(
     cors({
-        origin: "http://localhost:5500", // Remplacez par l'URL de votre frontend si différente
+        origin: process.env.FRONTEND_URL,
     })
 );
 
@@ -28,11 +28,9 @@ app.use(limiter);
 const transcribeRoute = require("./routes/transcribe");
 app.use("/transcribe", transcribeRoute);
 
-// Servir le frontend en mode développement (optionnel)
-app.use(express.static(path.join(__dirname, "../frontend")));
-
 // Démarrer le serveur
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
     console.log(`Serveur backend démarré sur le port ${PORT}`);
 });

@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+    frontend:
+        image: nginx:latest
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        ports:
+            - "80:80"
+        volumes:
+            - ./frontend:/usr/share/nginx/html
+        environment:
+            - API_URL=API_URL
+        depends_on:
+            - backend
+        networks:
+            - webnet
+
+    backend:
+        image: node:latest
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        volumes:
+            - ./backend:/app
+        ports:
+            - "3000:3000"
+        environment:
+            - FRONTEND_URL=FRONTEND_URL
+            - PORT=PORT
+        networks:
+            - webnet
+
+networks:
+    webnet:
