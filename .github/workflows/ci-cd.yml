@@ -24,7 +24,7 @@ jobs:
 
       - name: Build and Push Docker Images
         run: |
-          docker-compose build
+          docker compose build
 
       - name: Deploy to Server
         uses: appleboy/ssh-action@v0.1.7
@@ -35,5 +35,5 @@ jobs:
           script: |
             cd /root/projects/audio-to-text
             git pull origin main
-            docker-compose down
-            docker-compose up -d --build
+            docker compose down
+            docker compose up -d --build
