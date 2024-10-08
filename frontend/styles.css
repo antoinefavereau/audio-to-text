@@ -7,10 +7,32 @@ body {
     margin-top: 10px;
 }
 
+#progressContainer {
+    width: 100%;
+    background-color: #f3f3f3;
+    border-radius: 5px;
+    margin-top: 10px;
+    display: none;
+
+    #progressBar {
+        width: 0%;
+        height: 20px;
+        background-color: #4caf50;
+        text-align: center;
+        color: white;
+        border-radius: 5px;
+    }
+}
+
 #result {
     margin-top: 20px;
     padding: 10px;
     border: 1px solid #ccc;
     white-space: pre-wrap;
     background-color: #f9f9f9;
+}
+
+#error {
+    margin-top: 20px;
+    color: red;
 }
