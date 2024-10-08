@@ -11,7 +11,7 @@ services:
         volumes:
             - ./frontend:/usr/share/nginx/html
         environment:
-            - API_URL=API_URL
+            - API_URL=${API_URL}
         depends_on:
             - backend
         networks:
@@ -23,12 +23,12 @@ services:
             context: ./backend
             dockerfile: Dockerfile
         volumes:
-            - ./backend:/app
+            - ./backend:/usr/src/app
         ports:
             - "3000:3000"
         environment:
-            - FRONTEND_URL=FRONTEND_URL
-            - PORT=PORT
+            - FRONTEND_URL=${FRONTEND_URL}
+            - PORT=${PORT}
         networks:
             - webnet
 
