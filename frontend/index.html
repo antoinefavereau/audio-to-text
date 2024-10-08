@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Générateur de Transcription Audio</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="script.js" defer></script>
 </head>
 
@@ -13,7 +14,11 @@
     <h1>Générateur de Transcription Audio</h1>
     <label for="audioInput">Fichier audio</label>
     <input type="file" id="audioInput" accept="audio/vnd.dlna.adts,audio/*">
+    <div id="progressContainer">
+        <div id="progressBar">0%</div>
+    </div>
     <a id="downloadBtn" style="display:none;">Télécharger la Transcription</a>
+    <div id="error"></div>
     <div id="result"></div>
 </body>
 

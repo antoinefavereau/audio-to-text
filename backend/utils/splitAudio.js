@@ -1,7 +1,7 @@
 const ffmpeg = require('fluent-ffmpeg');
 const path = require('path');
 const fs = require('fs');
-const ffmpegPath = require('ffmpeg-static'); // Importer ffmpeg-static
+const ffmpegPath = require('ffmpeg-static');
 
 // Définir le chemin vers FFmpeg fourni par ffmpeg-static
 if (ffmpegPath) {
@@ -15,9 +15,10 @@ if (ffmpegPath) {
  * @param {string} inputPath - Chemin du fichier audio d'entrée.
  * @param {string} outputDir - Répertoire où les segments seront stockés.
  * @param {number} segmentDuration - Durée de chaque segment en secondes.
+ * @param {object} io - Instance de Socket.io pour émettre des événements.
  * @returns {Promise<string[]>} - Liste des chemins des fichiers segments créés.
  */
-function splitAudio(inputPath, outputDir, segmentDuration = 600) { // 600 secondes = 10 minutes
+function splitAudio(inputPath, outputDir, segmentDuration = 600, io) { // 600 secondes = 10 minutes
   return new Promise((resolve, reject) => {
     console.log(`Diviser le fichier audio : ${inputPath}`);
     if (!fs.existsSync(outputDir)){
@@ -37,9 +38,15 @@ function splitAudio(inputPath, outputDir, segmentDuration = 600) { // 600 second
       .output(outputPattern)
       .on('start', (cmdLine) => {
         console.log(`FFmpeg lancé avec la commande : ${cmdLine}`);
+        io.emit('processStarted', { message: 'Le traitement audio a commencé.' });
+      })
+      .on('progress', (progress) => {
+        console.log(`Progression : ${JSON.stringify(progress)}`);
+        io.emit('processing', { progress });
       })
       .on('end', () => {
         console.log('Division de l\'audio terminée.');
+        io.emit('processEnded', { message: 'Le traitement audio est terminé.' });
         // Récupérer la liste des fichiers segments
         fs.readdir(outputDir, (err, files) => {
           if (err) {
@@ -73,6 +80,7 @@ function splitAudio(inputPath, outputDir, segmentDuration = 600) { // 600 second
       })
       .on('error', (err) => {
         console.error('Erreur FFmpeg lors de la division de l\'audio :', err.message);
+        io.emit('processError', { message: 'Erreur lors du traitement audio.', error: err.message });
         reject(err);
       })
       .run();
