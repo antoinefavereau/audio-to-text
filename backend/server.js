@@ -5,21 +5,30 @@ const http = require("node:http");
 const rateLimit = require("express-rate-limit");
 
 const app = express();
+
+// Configuration CORS pour Express
+app.use(
+    cors({
+        origin: process.env.FRONTEND_URL,
+        methods: ["GET", "POST"],
+        credentials: true,
+    })
+);
+
+// Gérer les requêtes OPTIONS
+app.options("*", cors());
+
 const server = http.createServer(app);
+
+// Configuration CORS pour Socket.IO
 const io = require("socket.io")(server, {
     cors: {
         origin: process.env.FRONTEND_URL,
         methods: ["GET", "POST"],
+        credentials: true,
     },
 });
 app.set("socketio", io);
-
-// Configurer CORS pour autoriser les requêtes du frontend
-app.use(
-    cors({
-        origin: process.env.FRONTEND_URL,
-    })
-);
 
 app.use(express.json());
 
