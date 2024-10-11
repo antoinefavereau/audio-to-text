@@ -23,7 +23,7 @@ services:
         volumes:
             - ./backend:/usr/src/app
         ports:
-            - "3000:3001"
+            - "3000:3000"
         environment:
             - FRONTEND_URL=${FRONTEND_URL}
             - OPENAI_API_KEY=${OPENAI_API_KEY}
