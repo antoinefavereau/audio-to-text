@@ -1,5 +1,5 @@
 // Initialiser Socket.io
-const socket = io("http://localhost:3000");
+const socket = io(CONFIG.SOCKET_URL);
 
 socket.on("connect", () => {
     console.log("Connecté à Socket.io");
@@ -79,7 +79,7 @@ document.getElementById("audioInput").addEventListener("change", () => {
     });
 
     // Envoyer la requête d'upload
-    fetch("http://localhost:3000/transcribe", {
+    fetch(CONFIG.API_URL, {
         method: "POST",
         body: formData,
     })
