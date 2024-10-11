@@ -8,8 +8,6 @@ services:
             - "8082:80"
         volumes:
             - ./frontend:/usr/share/nginx/html
-        environment:
-            - API_URL=${API_URL}
         depends_on:
             - backend
         networks:
