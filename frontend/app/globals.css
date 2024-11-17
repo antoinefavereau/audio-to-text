@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #111420;
+  --foreground: #fff;
+  --dark: #111420;
+  --lightDark: #202437;
+  --light: #9ca3af;
+  --primary: #e74218;
+  --secondary: #f38d2e;
+  --transparent: rgba(255, 255, 255, 0.07);
+  --transparentLight: rgba(255, 255, 255, 0.14);
+}
+
+body {
+  color: var(--foreground);
+  background: linear-gradient(#111126, #2e2c5a);
+  background-attachment: fixed;
+  font-family: Arial, Helvetica, sans-serif;
+}
