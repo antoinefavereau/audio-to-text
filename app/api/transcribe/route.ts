@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const form = formidable({ uploadDir: "./uploads", keepExtensions: true });
 
     // Convertit la requête web en stream Node.js compatible
-    const nodeStream = Readable.fromWeb(request.body!);
+    const nodeStream = Readable.fromWeb(request.body! as any);
     const nodeReq = nodeStream as unknown as NodeJS.ReadableStream & {
       headers: Record<string, string>;
     };
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       fields: any;
       files: formidable.Files;
     }>((resolve, reject) => {
-      form.parse(nodeReq, (err, fields, files) => {
+      form.parse(nodeReq as any, (err, fields, files) => {
         if (err) reject(err);
         else resolve({ fields, files });
       });
@@ -77,8 +77,10 @@ export async function POST(request: Request) {
             await fs.unlink(audioFilePath);
             await fs.unlink(outputFile);
             resolve(result);
-          } catch (err) {
-            reject(new Error("Failed to read or clean up output file."));
+          } catch (error) {
+            reject(
+              new Error("Failed to read or clean up output file: " + error)
+            );
           }
         } else {
           reject(new Error("Transcription process failed"));
