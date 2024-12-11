@@ -1,4 +1,5 @@
 import { RefObject, useState } from "react";
+import { useDropzone } from "react-dropzone";
 import Button, { baseButtonClasses, variantButtonClasses } from "../ui/Button";
 
 interface GenerateProps {
@@ -17,6 +18,19 @@ const Generate = ({ scrollRef }: GenerateProps) => {
     setActiveTab(tab);
     setStep(1);
   };
+
+  const onDrop = (acceptedFiles: File[]) => {
+    if (acceptedFiles.length > 0) {
+      setFile(acceptedFiles[0]);
+      setFileName(acceptedFiles[0].name.replace(/\.\w+$/, ".txt"));
+      setStep(2);
+    }
+  };
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: "audio/*",
+  });
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -98,7 +112,8 @@ const Generate = ({ scrollRef }: GenerateProps) => {
               step === 1
                 ? "border-2 border-dashed border-light px-8 py-16"
                 : "p-4"
-            }`}
+            } ${isDragActive ? "bg-transparent" : ""}`}
+            {...(step === 1 ? getRootProps() : {})}
           >
             <form
               className="contents"
@@ -107,9 +122,11 @@ const Generate = ({ scrollRef }: GenerateProps) => {
             >
               {step === 1 && (
                 <>
+                  <input {...getInputProps()} />
                   <p className="text-light">
-                    Glissez-déposez votre fichier audio ou cliquez pour
-                    sélectionner depuis votre appareil.
+                    {isDragActive
+                      ? "Déposez le fichier ici..."
+                      : "Glissez-déposez votre fichier audio ou cliquez pour sélectionner depuis votre appareil."}
                   </p>
                   <input
                     type="file"
