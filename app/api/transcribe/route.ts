@@ -54,46 +54,34 @@ export async function POST(request: Request) {
     // Sauvegarde du fichier temporaire
     const audioFilePath = await saveFile(file);
 
+    console.log("audioFilePath:" + audioFilePath);
+    console.log("pathDest" + path.dirname(audioFilePath));
+
     // Exécute Whisper via Python
     const transcription = await new Promise<string>((resolve, reject) => {
-      try {
-        const whisper = spawn("python", [
-          "-m",
-          "whisper",
-          audioFilePath,
-          "--model",
-          "base",
-          "--output_format",
-          "txt",
-          "--output_dir",
-          path.dirname(audioFilePath),
-        ]);
+      const whisper = spawn("python", [
+        "-m",
+        "whisper",
+        audioFilePath,
+        "--model",
+        "base",
+        "--output_format",
+        "txt",
+        "--output_dir",
+        path.dirname(audioFilePath),
+      ]);
 
-        whisper.stderr.on("data", (data) => {
-          reject(new Error(data.toString()));
-        });
-
-        whisper.on("close", async (code) => {
-          if (code === 0) {
-            const outputFile = audioFilePath.replace(/\.\w+$/, ".txt");
-
-            try {
-              const result = await fs.readFile(outputFile, "utf8");
-              await fs.unlink(audioFilePath);
-              await fs.unlink(outputFile);
-              resolve(result);
-            } catch (error) {
-              reject(
-                new Error("Failed to read or clean up output file: " + error)
-              );
-            }
-          } else {
-            reject(new Error("Transcription process failed"));
-          }
-        });
-      } catch (error) {
-        reject(new Error("Failed to spawn Whisper: " + error));
-      }
+      whisper.on("close", async (code) => {
+        if (code === 0) {
+          const outputFile = audioFilePath.replace(/\.\w+$/, ".txt");
+          const result = await fs.readFile(outputFile, "utf8");
+          await fs.unlink(audioFilePath);
+          await fs.unlink(outputFile);
+          resolve(result);
+        } else {
+          reject(new Error("Transcription process failed"));
+        }
+      });
     });
 
     return NextResponse.json({ transcription });
