@@ -3,7 +3,7 @@ import { useDropzone } from "react-dropzone";
 import Button, { baseButtonClasses, variantButtonClasses } from "../ui/Button";
 
 interface GenerateProps {
-  scrollRef: RefObject<HTMLDivElement>;
+  scrollRef: RefObject<HTMLDivElement | null>;
 }
 
 const Generate = ({ scrollRef }: GenerateProps) => {
@@ -29,7 +29,7 @@ const Generate = ({ scrollRef }: GenerateProps) => {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: "audio/*",
+    accept: { "audio/*": [] },
   });
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
