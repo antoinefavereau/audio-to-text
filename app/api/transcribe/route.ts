@@ -54,9 +54,6 @@ export async function POST(request: Request) {
     // Sauvegarde du fichier temporaire
     const audioFilePath = await saveFile(file);
 
-    console.log("audioFilePath:" + audioFilePath);
-    console.log("pathDest" + path.dirname(audioFilePath));
-
     // Exécute Whisper via Python
     const transcription = await new Promise<string>((resolve, reject) => {
       const whisper = spawn("whisper", [
