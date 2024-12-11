@@ -35,6 +35,9 @@ const Generate = ({ scrollRef }: GenerateProps) => {
       });
 
       const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error);
+      }
       setTextResult(data.transcription);
       setFileName(file.name.replace(/\.\w+$/, ".txt"));
       setStep(4);

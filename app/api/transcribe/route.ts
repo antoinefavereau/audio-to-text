@@ -56,36 +56,44 @@ export async function POST(request: Request) {
 
     // Exécute Whisper via Python
     const transcription = await new Promise<string>((resolve, reject) => {
-      const whisper = spawn("python", [
-        "-m",
-        "whisper",
-        audioFilePath,
-        "--model",
-        "base",
-        "--output_format",
-        "txt",
-        "--output_dir",
-        path.dirname(audioFilePath),
-      ]);
+      try {
+        const whisper = spawn("python", [
+          "-m",
+          "whisper",
+          audioFilePath,
+          "--model",
+          "base",
+          "--output_format",
+          "txt",
+          "--output_dir",
+          path.dirname(audioFilePath),
+        ]);
 
-      whisper.on("close", async (code) => {
-        if (code === 0) {
-          const outputFile = audioFilePath.replace(/\.\w+$/, ".txt");
+        whisper.stderr.on("data", (data) => {
+          reject(new Error(data.toString()));
+        });
 
-          try {
-            const result = await fs.readFile(outputFile, "utf8");
-            await fs.unlink(audioFilePath);
-            await fs.unlink(outputFile);
-            resolve(result);
-          } catch (error) {
-            reject(
-              new Error("Failed to read or clean up output file: " + error)
-            );
+        whisper.on("close", async (code) => {
+          if (code === 0) {
+            const outputFile = audioFilePath.replace(/\.\w+$/, ".txt");
+
+            try {
+              const result = await fs.readFile(outputFile, "utf8");
+              await fs.unlink(audioFilePath);
+              await fs.unlink(outputFile);
+              resolve(result);
+            } catch (error) {
+              reject(
+                new Error("Failed to read or clean up output file: " + error)
+              );
+            }
+          } else {
+            reject(new Error("Transcription process failed"));
           }
-        } else {
-          reject(new Error("Transcription process failed"));
-        }
-      });
+        });
+      } catch (error) {
+        reject(new Error("Failed to spawn Whisper: " + error));
+      }
     });
 
     return NextResponse.json({ transcription });
