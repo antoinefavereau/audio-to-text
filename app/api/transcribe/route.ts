@@ -59,9 +59,7 @@ export async function POST(request: Request) {
 
     // Exécute Whisper via Python
     const transcription = await new Promise<string>((resolve, reject) => {
-      const whisper = spawn("python", [
-        "-m",
-        "whisper",
+      const whisper = spawn("whisper", [
         audioFilePath,
         "--model",
         "base",
