@@ -27,62 +27,84 @@ export async function POST(request: Request) {
   try {
     const form = formidable({ uploadDir: "./uploads", keepExtensions: true });
 
-    // Convertit la requête web en stream Node.js compatible
-    const nodeStream = Readable.fromWeb(request.body! as any);
-    const nodeReq = nodeStream as unknown as NodeJS.ReadableStream & {
-      headers: Record<string, string>;
-    };
+    // Create a ReadableStream to send progress updates
+    const stream = new ReadableStream({
+      async start(controller) {
+        let isClosed = false; // Flag to track if the controller is closed
 
-    nodeReq.headers = Object.fromEntries(request.headers.entries());
+        // Convert the web request to Node.js stream
+        const nodeStream = Readable.fromWeb(request.body! as any);
+        const nodeReq = nodeStream as unknown as NodeJS.ReadableStream & {
+          headers: Record<string, string>;
+        };
 
-    // Parse le fichier
-    const { files } = await new Promise<{
-      fields: any;
-      files: formidable.Files;
-    }>((resolve, reject) => {
-      form.parse(nodeReq as any, (err, fields, files) => {
-        if (err) reject(err);
-        else resolve({ fields, files });
-      });
-    });
+        nodeReq.headers = Object.fromEntries(request.headers.entries());
 
-    const file = (files.file as formidable.File[])[0];
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
+        // Parse the file
+        const { files } = await new Promise<{
+          fields: any;
+          files: formidable.Files;
+        }>((resolve, reject) => {
+          form.parse(nodeReq as any, (err, fields, files) => {
+            if (err) reject(err);
+            else resolve({ fields, files });
+          });
+        });
 
-    // Sauvegarde du fichier temporaire
-    const audioFilePath = await saveFile(file);
-
-    console.log("audioFilePath:" + audioFilePath);
-    console.log("pathDest" + path.dirname(audioFilePath));
-
-    // Exécute Whisper via Python
-    const transcription = await new Promise<string>((resolve, reject) => {
-      const whisper = spawn("whisper", [
-        audioFilePath,
-        "--model",
-        "base",
-        "--output_format",
-        "txt",
-        "--output_dir",
-        path.dirname(audioFilePath),
-      ]);
-
-      whisper.on("close", async (code) => {
-        if (code === 0) {
-          const outputFile = audioFilePath.replace(/\.\w+$/, ".txt");
-          const result = await fs.readFile(outputFile, "utf8");
-          await fs.unlink(audioFilePath);
-          await fs.unlink(outputFile);
-          resolve(result);
-        } else {
-          reject(new Error("Transcription process failed"));
+        const file = (files.file as formidable.File[])[0];
+        if (!file) {
+          controller.error("No file provided");
+          return;
         }
-      });
+
+        // Save the temporary file
+        const audioFilePath = await saveFile(file);
+
+        // Execute Whisper via Python
+        const whisper = spawn("whisper", [
+          audioFilePath,
+          "--model",
+          "base",
+          "--output_format",
+          "txt",
+          "--output_dir",
+          path.dirname(audioFilePath),
+          "--verbose",
+          "False",
+        ]);
+
+        whisper.stderr.on("data", (data) => {
+          if (!isClosed) {
+            // Check if controller is still open
+            const log = data.toString();
+            const regex = /(\d+(?:\.\d+)?)(?=%)/g;
+            const match = log.match(regex);
+            if (match) {
+              const percentage = match[0];
+              controller.enqueue(`Progress: ${percentage}%\n`);
+            }
+          }
+        });
+
+        whisper.on("close", async (code) => {
+          isClosed = true; // Set flag to indicate controller is closed
+          if (code === 0) {
+            const outputFile = audioFilePath.replace(/\.\w+$/, ".txt");
+            const result = await fs.readFile(outputFile, "utf8");
+            await fs.unlink(audioFilePath);
+            await fs.unlink(outputFile);
+            controller.enqueue(`Transcription: ${result}`);
+            controller.close();
+          } else {
+            controller.error("Transcription process failed");
+          }
+        });
+      },
     });
 
-    return NextResponse.json({ transcription });
+    return new Response(stream, {
+      headers: { "Content-Type": "text/plain" },
+    });
   } catch (error) {
     return NextResponse.json(
       { error: (error as Error).message },

@@ -5,7 +5,7 @@ import TopSection from "@/components/generate/TopSection";
 import Generate from "@/components/generate/Generate";
 
 export default function Home() {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   return (
     <div className="flex flex-col items-center">

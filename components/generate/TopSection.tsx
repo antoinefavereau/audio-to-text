@@ -3,7 +3,7 @@ import Button from "../ui/Button";
 import { RefObject } from "react";
 
 interface TopSectionProps {
-  scrollRef: RefObject<HTMLDivElement>;
+  scrollRef: RefObject<HTMLDivElement | null>;
 }
 
 const TopSection = ({ scrollRef }: TopSectionProps) => {
