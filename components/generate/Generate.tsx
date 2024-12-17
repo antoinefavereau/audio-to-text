@@ -12,6 +12,7 @@ const Generate = ({ scrollRef }: GenerateProps) => {
   const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState("");
   const [textResult, setTextResult] = useState("");
+  const [progress, setProgress] = useState<number>(0);
 
   const changeTab = (tab: string) => {
     if (tab === activeTab) return;
@@ -38,6 +39,7 @@ const Generate = ({ scrollRef }: GenerateProps) => {
     if (!file) return;
 
     setStep(3);
+    setProgress(0);
 
     try {
       const formData = new FormData();
@@ -48,13 +50,34 @@ const Generate = ({ scrollRef }: GenerateProps) => {
         body: formData,
       });
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error);
+      if (!response.body) {
+        throw new Error("No response body");
       }
-      setTextResult(data.transcription);
-      setFileName(file.name.replace(/\.\w+$/, ".txt"));
-      setStep(4);
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let done = false;
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read();
+        done = doneReading;
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split("\n");
+          lines.forEach((line) => {
+            if (line.startsWith("Progress:")) {
+              const match = line.match(/Progress: (\d+)%/);
+              if (match) {
+                setProgress(Number(match[1]));
+              }
+            } else if (line.startsWith("Transcription:")) {
+              const transcription = line.replace("Transcription: ", "");
+              setTextResult(transcription);
+              setStep(4);
+            }
+          });
+        }
+      }
     } catch (error) {
       setStep(1);
       alert("Une erreur est survenue lors de la transcription : " + error);
@@ -250,35 +273,19 @@ const Generate = ({ scrollRef }: GenerateProps) => {
             </form>
             {step === 3 && (
               <div className="flex flex-col items-center gap-4">
-                <p className="text-light">Transcription en cours...</p>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 100 100"
-                  width="100"
-                  height="100"
-                >
-                  <g>
-                    <circle
-                      strokeDasharray="164.93361431346415 56.97787143782138"
-                      r="35"
-                      strokeWidth="10"
-                      stroke="currentColor"
-                      fill="none"
-                      cy="50"
-                      cx="50"
-                    >
-                      <animateTransform
-                        keyTimes="0;1"
-                        values="0 50 50;360 50 50"
-                        dur="1s"
-                        repeatCount="indefinite"
-                        type="rotate"
-                        attributeName="transform"
-                      ></animateTransform>
-                    </circle>
-                    <g></g>
-                  </g>
-                </svg>
+                <p className="text-light">
+                  Transcription en cours... {progress}%
+                </p>
+                <div className="flex w-[400px] max-w-full h-6 rounded-sm ring-inset ring-1 ring-transparent">
+                  {[...Array(50)].map((_, index) => (
+                    <div
+                      key={index}
+                      className={`w-[1%] me-[1%] h-full rounded-sm ${
+                        index < progress / 2 ? "bg-white" : ""
+                      }`}
+                    ></div>
+                  ))}
+                </div>
               </div>
             )}
             {step === 4 && (
