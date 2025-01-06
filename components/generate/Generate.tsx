@@ -20,6 +20,16 @@ const Generate = ({ scrollRef }: GenerateProps) => {
     setStep(1);
   };
 
+  const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const acceptedFiles = event.target.files;
+
+    if (acceptedFiles && acceptedFiles.length > 0) {
+      setFile(acceptedFiles[0]);
+      setFileName(acceptedFiles[0].name.replace(/\.\w+$/, ".txt"));
+      setStep(2);
+    }
+  };
+
   const onDrop = (acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       setFile(acceptedFiles[0]);
@@ -157,10 +167,7 @@ const Generate = ({ scrollRef }: GenerateProps) => {
                     type="file"
                     name="file"
                     id="file"
-                    onChange={(event) => {
-                      setStep(2);
-                      setFile(event.currentTarget.files?.[0] || null);
-                    }}
+                    onChange={onFileChange}
                     hidden
                   />
                   <label
@@ -211,9 +218,7 @@ const Generate = ({ scrollRef }: GenerateProps) => {
                       type="file"
                       name="file"
                       id="file"
-                      onChange={(event) => {
-                        setFile(event.currentTarget.files?.[0] || null);
-                      }}
+                      onChange={onFileChange}
                     />
                     <label
                       htmlFor="file"
