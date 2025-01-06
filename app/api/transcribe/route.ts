@@ -82,6 +82,9 @@ export async function POST(request: Request) {
             if (match) {
               const percentage = match[0];
               controller.enqueue(`Progress: ${percentage}%\n`);
+            } else {
+              controller.error("Error in transcription process");
+              controller.close();
             }
           }
         });
