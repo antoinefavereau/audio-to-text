@@ -31,6 +31,8 @@ const Generate = ({ scrollRef }: GenerateProps) => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: { "audio/*": [] },
+    multiple: false,
+    noClick: true,
   });
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
