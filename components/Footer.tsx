@@ -5,7 +5,7 @@ const Footer = () => {
         Designé par{" "}
         <a
           className="underline hover:text-primary duration-100"
-          href="https://www.linkedin.com/in/cécile-lochus/"
+          href="https://cecile-lochus.fr/"
           target="_blank"
           rel="noopener"
         >
