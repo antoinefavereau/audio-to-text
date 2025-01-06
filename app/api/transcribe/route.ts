@@ -96,10 +96,10 @@ export async function POST(request: Request) {
 
             const sanitizedText = result.replace(/\r?\n/g, " ");
             controller.enqueue("Transcription: " + sanitizedText);
-            controller.close();
           } else {
             controller.error("Transcription process failed");
           }
+          controller.close();
         });
       },
     });
