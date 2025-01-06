@@ -93,7 +93,9 @@ export async function POST(request: Request) {
             const result = await fs.readFile(outputFile, "utf8");
             await fs.unlink(audioFilePath);
             await fs.unlink(outputFile);
-            controller.enqueue(`Transcription: ${result}`);
+
+            const sanitizedText = result.replace(/\r?\n/g, " ");
+            controller.enqueue("Transcription: " + sanitizedText);
             controller.close();
           } else {
             controller.error("Transcription process failed");
