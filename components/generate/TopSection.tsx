@@ -20,7 +20,7 @@ const TopSection = ({ scrollRef }: TopSectionProps) => {
         width={1000}
         height={500}
       />
-      <h1 className="text-3xl md:text-5xl lg:text-7xl font-semibold leading-snug max-w-[800px]">
+      <h1 className="text-3xl md:text-5xl lg:text-6xl font-semibold leading-snug max-w-[800px]">
         Transformez vos audio en texte facilement
       </h1>
       <p className="text-lg sm-text-xl md:text-2xl max-w-[600px] text-light">
