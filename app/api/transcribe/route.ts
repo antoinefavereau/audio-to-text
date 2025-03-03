@@ -81,7 +81,14 @@ export async function POST(request: Request) {
             const match = log.match(regex);
             if (match) {
               const percentage = match[0];
-              controller.enqueue(`Progress: ${percentage}%\n`);
+              try {
+                // Remove the incorrect signal check
+                controller.enqueue(`Progress: ${percentage}%\n`);
+              } catch (error) {
+                // Silently handle the case where the controller might be closed
+                console.log("Stream controller is no longer available:", error);
+                isClosed = true; // Update flag when we detect controller is unusable
+              }
             }
           }
         });
